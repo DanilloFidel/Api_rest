@@ -32,7 +32,13 @@ app.listen(port)
 console.log('Ta rodando na porta::' + port)
 
 // =========================================
-app.use('/api', apiRoutes)
+app.use('/api', apiRoutes, cors())
+
+app.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+  });
 
 apiRoutes.post('/registro', (req, res) => {
     let newUser = new User({
@@ -43,8 +49,8 @@ apiRoutes.post('/registro', (req, res) => {
         admin: req.body.admin
     })
 
-    newUser.save( (err) => {
-        if(err)
+    newUser.save( function (error){
+        if(error)
             throw error
         
         console.log('sucesso!!')
@@ -55,16 +61,16 @@ apiRoutes.post('/registro', (req, res) => {
 })
 
 apiRoutes.post('/authenticate', (req, res) => {
-    User.findOne({ name: req.body.name }, (err, user) => {
+    User.findOne({ email: req.body.email }, (err, user) => {
         if (err)
             throw error
 
         if(!user) {
-            res.json({ success: false, message: 'Autenticaçao do Usuario falhou. N existe User'})
+            res.json({ success: false, message: 'Autenticaçao do Email falhou. N existe User'})
         } else if (user) {
 
             if(user.pwd != req.body.pwd) {
-                res.json({ success: false, message: 'Autenticaçao do Usuario Falhou. Senha ERRROUUUU!!'})
+                res.json({ success: false, message: 'Autenticaçao do Email Falhou. Senha ERRROUUUU!!'})
             } else {
                 let token = jwt.sign(user, app.get('superNode-auth'), {
                     expiresIn: 300
@@ -73,7 +79,7 @@ apiRoutes.post('/authenticate', (req, res) => {
                 res.json({
                     success: true,
                     message: 'Token Criado!!',
-                    toke: token
+                    token: token
                 })
             }
         }
