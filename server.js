@@ -36,7 +36,7 @@ console.log('Ta rodando na porta::' + port)
 // =========================================
 var corsOptions = {
     origin: '*',
-    allowedHeaders: ['Content-Type', 'Authorization', 'Content-Length', 'X-Requested-With', 'Accept'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Content-Length', 'X-Requested-With', 'Accept', 'x-access-token'],
     methods: ['GET', 'PUT', 'POST', 'DELETE', 'OPTIONS'],
     optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 }
@@ -44,7 +44,14 @@ app.use(cors(corsOptions));
 
 app.use('/api', apiRoutes)
 
+// apiRoutes.get('/emails', (req, res) => {
+//     User.find().distinct('email', (err, users) => {
+//         res.json(users)
+//     })
+// })
+
 apiRoutes.post('/registro', (req, res) => {
+
     let newUser = new User({
         nome: req.body.nome,
         sobrenome: req.body.sobrenome,
@@ -54,22 +61,31 @@ apiRoutes.post('/registro', (req, res) => {
         admin: req.body.admin
     })
 
-    
-    newUser.save( (err) => {
-        if(err)
-            console.log(err) // throw error
-        
-        console.log('sucesso!!')
-            res.json({
-                success: true
+    User.findOne({ email: req.body.email }, (err, user) => {
+       
+        if( user == null ){
+
+            newUser.save( (err) => {
+                if(err){
+                    res.status(500).json({ error: err.message })
+                } else {
+                    console.log('sucesso!!')
+                        res.json({
+                        success: true
+                    })
+                }
             })
+        } else {
+            res.status(500).json({ message: 'Email ja existe '})
+        }
     })
+        
 })
 
 apiRoutes.post('/authenticate', (req, res) => {
     User.findOne({ email: req.body.email }, (err, user) => {
         if (err)
-            console.log(err)
+            res.status(500).json({ error: err.message })
 
         if(!user) {
             res.json({ success: false, message: 'Autenticaçao do Email falhou. N existe User'})
@@ -79,7 +95,7 @@ apiRoutes.post('/authenticate', (req, res) => {
                 res.json({ success: false, message: 'Autenticaçao do Email Falhou. Senha ERRROUUUU!!'})
             } else {
                 let token = jwt.sign(user, app.get('superNode-auth'), {
-                    expiresIn: 300
+                    expiresIn: 700
                 })
 
                 res.json({
@@ -128,6 +144,19 @@ apiRoutes.get('/users/:_id', (req, res) => {
     })
 })
 
+apiRoutes.get('/users/:email', (req, res) => {
+    User.find({email: req.params.email}, (err, users) => {
+        res.json(users)
+    })
+})
+
+// apiRoutes.get('/users/:email', (req, res) => {
+//     User.find().distinct('email', (err, users) => {
+//     res.json(users)
+//     })
+// })
+
+
 apiRoutes.put('/users', (req, res) => {
     User.findOneAndUpdate({ _id: req.params._id }, req.body, { upsert: true}, (err, users) => {
         if(err) {
@@ -162,18 +191,27 @@ apiRoutes.post('/registro', (req, res) => {
         desc: req.body.desc,
         rua: req.body.rua,
         cep: req.body.cep,
-        bairro: req.body.bairro
+        bairro: req.body.bairro,
+        nro: req.body.nro
     })
 
-    newImovel.save( (err) => {
-        if(err)
-            console.log(error)
-        
-        console.log('sucesso!!')
-            res.json({
-                success: true
+    User.findOne({ tipo: req.body.email, area: req.body.area, cep: req.body.cep, nro: req.body.nro  }, (err, imoveis) => {
+        if( imoveis == null ){
+            newImovel.save( (err) => {
+                if(err){
+                    console.log(error)
+                }else{
+                console.log('sucesso!!')
+                    res.json({
+                        success: true
+                    })
+             } 
             })
+        } else {
+            res.status(500).json({ message: 'Imovel ja existe '})
+        }
     })
+    
 })
 
 apiRoutes.get('/imoveis', (req, res) => {

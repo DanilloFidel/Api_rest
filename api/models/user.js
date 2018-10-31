@@ -9,6 +9,7 @@ module.exports = mongoose.model('User', new Schema({
     telefone: { type: String, required: true },
     email: { type: String, required: true },
     admin: { type: Boolean, required: false },
-    funcionario: { type: Boolean, required: false}
-    
+    funcionario: { type: Boolean, required: false},
+    favoritos: []
+
 }))

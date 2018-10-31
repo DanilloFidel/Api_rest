@@ -13,6 +13,8 @@ module.exports = mongoose.model('Imovel', new Schema({
     desc: { type: String, require: true },
     rua: { type: String, required: true },
     cep: { type: String, required: true },
-    bairro: { type: String, require: true }
+    bairro: { type: String, require: true },
+    nro: { type: String, required: true },
+    imagem: { data: Buffer, contentType: String, required: false }
 
 }))
