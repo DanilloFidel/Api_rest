@@ -5,6 +5,8 @@ let bodyParser = require('body-parser')
 let morgan = require('morgan')
 let mongoose = require('mongoose')
 
+let cors = require('cors')
+
 let jwt = require('jsonwebtoken')
 let config = require('./config')
 
@@ -32,7 +34,8 @@ app.listen(port)
 console.log('Ta rodando na porta::' + port)
 
 // =========================================
-app.use('/api', apiRoutes, cors())
+app.use('/api', apiRoutes)
+app.use(cors())
 
 app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
@@ -50,8 +53,8 @@ apiRoutes.post('/registro', (req, res) => {
     })
 
     newUser.save( function (error){
-        if(error)
-            throw error
+        if(err)
+            throw err
         
         console.log('sucesso!!')
             res.json({
