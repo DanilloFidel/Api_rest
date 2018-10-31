@@ -34,27 +34,30 @@ app.listen(port)
 console.log('Ta rodando na porta::' + port)
 
 // =========================================
-app.use('/api', apiRoutes)
-app.use(cors())
+var corsOptions = {
+    origin: '*',
+    allowedHeaders: ['Content-Type', 'Authorization', 'Content-Length', 'X-Requested-With', 'Accept'],
+    methods: ['GET', 'PUT', 'POST', 'DELETE', 'OPTIONS'],
+    optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+}
+app.use(cors(corsOptions));
 
-app.use(function(req, res, next) {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    next();
-  });
+app.use('/api', apiRoutes)
 
 apiRoutes.post('/registro', (req, res) => {
     let newUser = new User({
-        name: req.body.name,
-        pwd: req.body.pwd,
+        nome: req.body.nome,
+        sobrenome: req.body.sobrenome,
+        senha: req.body.senha,
         telefone: req.body.telefone,
         email: req.body.email,
         admin: req.body.admin
     })
 
-    newUser.save( function (error){
+    
+    newUser.save( (err) => {
         if(err)
-            throw err
+            console.log(err) // throw error
         
         console.log('sucesso!!')
             res.json({
@@ -66,13 +69,13 @@ apiRoutes.post('/registro', (req, res) => {
 apiRoutes.post('/authenticate', (req, res) => {
     User.findOne({ email: req.body.email }, (err, user) => {
         if (err)
-            throw error
+            console.log(err)
 
         if(!user) {
             res.json({ success: false, message: 'Autenticaçao do Email falhou. N existe User'})
         } else if (user) {
 
-            if(user.pwd != req.body.pwd) {
+            if(user.senha != req.body.senha) {
                 res.json({ success: false, message: 'Autenticaçao do Email Falhou. Senha ERRROUUUU!!'})
             } else {
                 let token = jwt.sign(user, app.get('superNode-auth'), {
@@ -164,7 +167,7 @@ apiRoutes.post('/registro', (req, res) => {
 
     newImovel.save( (err) => {
         if(err)
-            throw error
+            console.log(error)
         
         console.log('sucesso!!')
             res.json({

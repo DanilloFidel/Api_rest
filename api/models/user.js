@@ -3,8 +3,9 @@ let Schema = mongoose.Schema
 
 module.exports = mongoose.model('User', new Schema({
 
-    name: { type: String, required: true},
-    pwd: { type: String, required: true},
+    nome: { type: String, required: true},
+    sobrenome: { type: String, required: true},
+    senha: { type: String, required: true},
     telefone: { type: String, required: true },
     email: { type: String, required: true },
     admin: { type: Boolean, required: false },
