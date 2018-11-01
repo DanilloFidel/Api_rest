@@ -138,11 +138,11 @@ apiRoutes.get('/users', (req, res) => {
     })
 })
 
-apiRoutes.get('/users/:_id', (req, res) => {
-    User.find({_id: req.params._id}, (err, users) => {
-        res.json(users)
-    })
-})
+// apiRoutes.get('/users/:_id', (req, res) => {
+//     User.find({_id: req.params._id}, (err, users) => {
+//         res.json(users)
+//     })
+// })
 
 apiRoutes.get('/users/:email', (req, res) => {
     User.find({email: req.params.email}, (err, users) => {
