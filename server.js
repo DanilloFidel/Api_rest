@@ -7,6 +7,32 @@ let mongoose = require('mongoose')
 
 let cors = require('cors')
 
+const multer = require('multer');
+const storage = multer.diskStorage({
+    destination: function(req, file, cb) {
+      cb(null, './uploads');
+    },
+    filename: function(req, file, cb) {
+      cb(null, new Date().getTime() + '-' + file.originalname);
+    }
+});
+  
+const fileFilter = (req, file, cb) => {
+    if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
+      cb(null, true);
+    } else {
+      cb(null, false);
+    }
+};
+  
+const upload = multer({
+    storage: storage,
+    limits: {
+      fileSize: 1024 * 1024 * 5
+    },
+    fileFilter: fileFilter
+});
+
 let jwt = require('jsonwebtoken')
 let config = require('./config')
 
@@ -50,7 +76,7 @@ app.use('/api', apiRoutes)
 //     })
 // })
 
-apiRoutes.post('/registro', (req, res) => {
+apiRoutes.post('/registro', upload.single('userImg'), (req, res) => {
 
     let newUser = new User({
         nome: req.body.nome,
@@ -59,23 +85,35 @@ apiRoutes.post('/registro', (req, res) => {
         telefone: req.body.telefone,
         email: req.body.email,
         admin: req.body.admin,
-        funcionario: req.body.funcionario
+        funcionario: req.body.funcionario,
+        userImg: req.file.path
     })
 
     User.findOne({ email: req.body.email }, (err, user) => {
        
         if( user == null ){
-
-            newUser.save( (err) => {
-                if(err){
-                    res.status(500).json({ error: err.message })
-                } else {
-                    console.log('sucesso!!')
-                        res.json({
-                        success: true
+            newUser
+                .save()
+                .then(result => {
+                    res.status(201).json({
+                        message: 'Sucesso!!!',
+                        createdUser: {
+                            _id: result._id,
+                            nome: result.nome,
+                            sobrenome: result.sobrenome,
+                            telefone: result.telefone,
+                            email: result.email,
+                            senha: result.senha,
+                            userImg: result.userImg,
+                            admin: result.admin,
+                            funcionario: result.funcionario
+                        }
                     })
-                }
-            })
+                }).catch(err => {
+                    res.status(500).json({
+                        error: err
+                    })
+                })
         } else {
             res.status(500).json({ message: 'Email ja existe '})
         }
@@ -133,9 +171,34 @@ apiRoutes.use( (req, res, next) => {
 
 // ============================================
 
+// apiRoutes.get('/users', (req, res) => {
+//     User.find({}, (err, users) => {
+//         res.json(users)
+//     })
+// })
+
 apiRoutes.get('/users', (req, res) => {
-    User.find({}, (err, users) => {
-        res.json(users)
+    User.find()
+    .select("nome sobrenome telefone email favoritos")
+    .exec()
+    .then(docs => {
+        const response = {
+            count: docs.length,
+            users: docs.map(doc => {
+                return {
+                    _id: doc._id,
+                    nome: doc.nome,
+                    sobrenome: doc.sobrenome,
+                    telefone: doc.telefone,
+                    email: doc.email,
+                    favoritos: doc.favoritos,
+                    userImg: doc.userImg
+                }
+            })
+        }
+        res.status(200).json(response)
+    }).catch(err => {
+        res.status(500).json({ error: err })
     })
 })
 
@@ -248,4 +311,3 @@ apiRoutes.delete('/imoveis', (req, res) => {
 })
 
 // ============================================
-
