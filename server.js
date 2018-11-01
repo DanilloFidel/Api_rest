@@ -36,15 +36,15 @@ const upload = multer({
 let jwt = require('jsonwebtoken')
 let config = require('./config')
 
-let User = require('./api/models/user')
+let Usuario = require('./api/models/usuario')
 let Imovel = require('./api/models/imovel')
 
-let port = process.env.PORT || 0042
+let port = process.env.PORT || 1337 //DARKSORCER
 mongoose.Promise = global.Promise
 mongoose.connect(config.database, {
     useMongoClient: true
 })
-    .then(() => console.log('Conectado com MongoDB'))
+    .then(() => console.log('A conexao com o mLAB foi um SUCESSO!!!'))
     .catch((err) => console.error(err));
 
 app.set('superNode-auth', config.configName)
@@ -57,7 +57,7 @@ app.use(morgan('dev'))
 let apiRoutes = express.Router()
 
 app.listen(port)
-console.log('Ta rodando na porta::' + port)
+console.log('A api esta hospedada na porta: ' + port)
 
 // =========================================
 var corsOptions = {
@@ -71,14 +71,14 @@ app.use(cors(corsOptions));
 app.use('/api', apiRoutes)
 
 // apiRoutes.get('/emails', (req, res) => {
-//     User.find().distinct('email', (err, users) => {
-//         res.json(users)
+//     Usuario.find().distinct('email', (err, usuarios) => {
+//         res.json(usuarios)
 //     })
 // })
 
-apiRoutes.post('/registro', upload.single('userImg'), (req, res) => {
+apiRoutes.post('/registro', upload.single('usuarioImg'), (req, res) => {
 
-    let newUser = new User({
+    let novoUsuario = new Usuario({
         nome: req.body.nome,
         sobrenome: req.body.sobrenome,
         senha: req.body.senha,
@@ -86,54 +86,52 @@ apiRoutes.post('/registro', upload.single('userImg'), (req, res) => {
         email: req.body.email,
         admin: req.body.admin,
         funcionario: req.body.funcionario,
-        userImg: req.file.path
+        usuarioImg: req.file.path
     })
 
-    User.findOne({ email: req.body.email }, (err, user) => {
+    Usuario.findOne({ email: req.body.email }, (err, usuario) => {
        
-        if( user == null ){
-            newUser
+        if( usuario == null ){
+            novoUsuario
                 .save()
                 .then(result => {
                     res.status(201).json({
-                        message: 'Sucesso!!!',
-                        createdUser: {
+                        message: 'Usuario cadastrado com SUCESSO!!!',
+                        createdUsuario: {
                             _id: result._id,
                             nome: result.nome,
                             sobrenome: result.sobrenome,
                             telefone: result.telefone,
                             email: result.email,
                             senha: result.senha,
-                            userImg: result.userImg,
+                            usuarioImg: result.usuarioImg,
                             admin: result.admin,
                             funcionario: result.funcionario
                         }
                     })
                 }).catch(err => {
-                    res.status(500).json({
-                        error: err
-                    })
+                    res.status(500).json({ message: 'Existe alguma informacao pendente a ser preenchida' })
                 })
         } else {
-            res.status(500).json({ message: 'Email ja existe '})
+            res.status(500).json({ message: 'Email ja existe' })
         }
     })
         
 })
 
-apiRoutes.post('/authenticate', (req, res) => {
-    User.findOne({ email: req.body.email }, (err, user) => {
+apiRoutes.post('/autenticacao', (req, res) => {
+    Usuario.findOne({ email: req.body.email }, (err, usuario) => {
         if (err)
             res.status(500).json({ error: err.message })
 
-        if(!user) {
-            res.json({ success: false, message: 'Autenticaçao do Email falhou. N existe User'})
-        } else if (user) {
+        if(!usuario) {
+            res.json({ success: false, message: 'Autenticaçao do Email falhou. N existe Usuario'})
+        } else if (usuario) {
 
-            if(user.senha != req.body.senha) {
+            if(usuario.senha != req.body.senha) {
                 res.json({ success: false, message: 'Autenticaçao do Email Falhou. Senha ERRROUUUU!!'})
             } else {
-                let token = jwt.sign(user, app.get('superNode-auth'), {
+                let token = jwt.sign(usuario, app.get('superNode-auth'), {
                     expiresIn: 700
                 })
 
@@ -171,20 +169,20 @@ apiRoutes.use( (req, res, next) => {
 
 // ============================================
 
-// apiRoutes.get('/users', (req, res) => {
-//     User.find({}, (err, users) => {
-//         res.json(users)
+// apiRoutes.get('/usuarios', (req, res) => {
+//     Usuario.find({}, (err, usuarios) => {
+//         res.json(usuarios)
 //     })
 // })
 
-apiRoutes.get('/users', (req, res) => {
-    User.find()
+apiRoutes.get('/usuarios', (req, res) => {
+    Usuario.find()
     .select("nome sobrenome telefone email favoritos")
     .exec()
     .then(docs => {
         const response = {
             count: docs.length,
-            users: docs.map(doc => {
+            usuarios: docs.map(doc => {
                 return {
                     _id: doc._id,
                     nome: doc.nome,
@@ -192,49 +190,49 @@ apiRoutes.get('/users', (req, res) => {
                     telefone: doc.telefone,
                     email: doc.email,
                     favoritos: doc.favoritos,
-                    userImg: doc.userImg
+                    usuarioImg: doc.usuarioImg
                 }
             })
         }
         res.status(200).json(response)
     }).catch(err => {
-        res.status(500).json({ error: err })
+        res.status(404).json({ message: 'usuarios nao encontrados' })
     })
 })
 
-// apiRoutes.get('/users/:_id', (req, res) => {
-//     User.find({_id: req.params._id}, (err, users) => {
-//         res.json(users)
+// apiRoutes.get('/usuarios/:_id', (req, res) => {
+//     Usuario.find({_id: req.params._id}, (err, usuarios) => {
+//         res.json(usuarios)
 //     })
 // })
 
-apiRoutes.get('/users/:email', (req, res) => {
-    User.find({email: req.params.email}, (err, users) => {
-        res.json(users)
+apiRoutes.get('/usuarios/:email', (req, res) => {
+    Usuario.find({email: req.params.email}, (err, usuarios) => {
+        res.json(usuarios)
     })
 })
 
-// apiRoutes.get('/users/:email', (req, res) => {
-//     User.find().distinct('email', (err, users) => {
-//     res.json(users)
+// apiRoutes.get('/usuarios/:email', (req, res) => {
+//     Usuario.find().distinct('email', (err, usuarios) => {
+//     res.json(usuarios)
 //     })
 // })
 
 
-apiRoutes.put('/users', (req, res) => {
-    User.findOneAndUpdate({ _id: req.params._id }, req.body, { upsert: true}, (err, users) => {
+apiRoutes.put('/usuarios', (req, res) => {
+    Usuario.findOneAndUpdate({ _id: req.params._id }, req.body, { upsert: true}, (err, usuarios) => {
         if(err) {
-            res.status(500).json({ error: err.message })
+            res.status(500).json({ message: 'Falha ao alterar os dados do usuario' })
             return
         }
-        res.json(users)
+        res.json(usuarios)
     })
 })
 
-apiRoutes.delete('/users', (req, res) => {
-    User.find({ _id: req.params._id }).remove( (err) => {
+apiRoutes.delete('/usuarios', (req, res) => {
+    Usuario.find({ _id: req.params._id }).remove( (err) => {
         if(err) {
-            res.status(500).json({ error: err.message })
+            res.status(500).json({ message: 'Falha ao deletar usuario' })
             return
         }
         res.json({ success: true })
@@ -259,7 +257,7 @@ apiRoutes.post('/registro', (req, res) => {
         nro: req.body.nro
     })
 
-    User.findOne({ tipo: req.body.email, area: req.body.area, cep: req.body.cep, nro: req.body.nro  }, (err, imoveis) => {
+    Usuario.findOne({ tipo: req.body.email, area: req.body.area, cep: req.body.cep, nro: req.body.nro  }, (err, imoveis) => {
         if( imoveis == null ){
             newImovel.save( (err) => {
                 if(err){
@@ -293,7 +291,7 @@ apiRoutes.get('/imoveis/:_id', (req, res) => {
 apiRoutes.put('/imoveis', (req, res) => {
     Imovel.findOneAndUpdate({ _id: req.params._id }, req.body, { upsert: true }, (err, imoveis) => {
         if(err) {
-            res.status(500).json({ error: err.message })
+            res.status(500).json({ message: 'Falha ao tentar alterar os dados do imovel' })
             return
         }
         res.json(imoveis)
@@ -303,7 +301,7 @@ apiRoutes.put('/imoveis', (req, res) => {
 apiRoutes.delete('/imoveis', (req, res) => {
     Imovel.find({ _id: req.params._id }).remove( (err) => {
         if(err) {
-            res.status(500).json({ error: err.message })
+            res.status(500).json({ message: 'Falha ao tentar deletar o imovel' })
             return
         }
         res.json({ success: true })
