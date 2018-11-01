@@ -58,7 +58,8 @@ apiRoutes.post('/registro', (req, res) => {
         senha: req.body.senha,
         telefone: req.body.telefone,
         email: req.body.email,
-        admin: req.body.admin
+        admin: req.body.admin,
+        funcionario: req.body.funcionario
     })
 
     User.findOne({ email: req.body.email }, (err, user) => {
@@ -245,3 +246,6 @@ apiRoutes.delete('/imoveis', (req, res) => {
         res.json({ success: true })
     })
 })
+
+// ============================================
+
