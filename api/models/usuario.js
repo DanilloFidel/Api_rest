@@ -1,7 +1,7 @@
 let mongoose = require('mongoose')
 let Schema = mongoose.Schema
 
-module.exports = mongoose.model('User', new Schema({
+module.exports = mongoose.model('Usuario', new Schema({
 
     nome: { type: String, required: true},
     sobrenome: { type: String, required: true},
@@ -11,6 +11,6 @@ module.exports = mongoose.model('User', new Schema({
     admin: { type: Boolean, required: false },
     funcionario: { type: Boolean, required: false},
     favoritos: [],
-    userImg: { type: String, required: true }
+    userImg: { type: String, required: false }
 
 }))

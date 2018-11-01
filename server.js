@@ -86,7 +86,7 @@ apiRoutes.post('/registro', upload.single('usuarioImg'), (req, res) => {
         email: req.body.email,
         admin: req.body.admin,
         funcionario: req.body.funcionario,
-        usuarioImg: req.file.path
+        //usuarioImg: req.file.path
     })
 
     Usuario.findOne({ email: req.body.email }, (err, usuario) => {
@@ -97,7 +97,7 @@ apiRoutes.post('/registro', upload.single('usuarioImg'), (req, res) => {
                 .then(result => {
                     res.status(201).json({
                         message: 'Usuario cadastrado com SUCESSO!!!',
-                        createdUsuario: {
+                        UsuarioCriado: {
                             _id: result._id,
                             nome: result.nome,
                             sobrenome: result.sobrenome,
@@ -106,7 +106,8 @@ apiRoutes.post('/registro', upload.single('usuarioImg'), (req, res) => {
                             senha: result.senha,
                             usuarioImg: result.usuarioImg,
                             admin: result.admin,
-                            funcionario: result.funcionario
+                            funcionario: result.funcionario,
+                            //usuarioImg: req.file.path
                         }
                     })
                 }).catch(err => {
@@ -229,7 +230,7 @@ apiRoutes.put('/usuarios', (req, res) => {
     })
 })
 
-apiRoutes.delete('/usuarios', (req, res) => {
+apiRoutes.delete('/usuarios/:_id', (req, res) => {
     Usuario.find({ _id: req.params._id }).remove( (err) => {
         if(err) {
             res.status(500).json({ message: 'Falha ao deletar usuario' })
