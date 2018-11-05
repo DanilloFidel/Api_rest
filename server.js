@@ -86,7 +86,7 @@ apiRoutes.post('/registro', upload.single('usuarioImg'), (req, res) => {
         email: req.body.email,
         admin: req.body.admin,
         funcionario: req.body.funcionario,
-        //usuarioImg: req.file.path
+        usuarioImg: req.file.path
     })
 
     Usuario.findOne({ email: req.body.email }, (err, usuario) => {
@@ -107,7 +107,7 @@ apiRoutes.post('/registro', upload.single('usuarioImg'), (req, res) => {
                             usuarioImg: result.usuarioImg,
                             admin: result.admin,
                             funcionario: result.funcionario,
-                            //usuarioImg: req.file.path
+                            usuarioImg: req.file.path
                         }
                     })
                 }).catch(err => {
@@ -242,7 +242,7 @@ apiRoutes.delete('/usuarios/:_id', (req, res) => {
 
 // ============================================
 
-apiRoutes.post('/registro', (req, res) => {
+apiRoutes.post('/registroimovel', (req, res) => {
     let newImovel = new Imovel({
         tipo: req.body.tipo,
         valor: req.body.valor,
