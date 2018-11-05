@@ -201,7 +201,7 @@ apiRoutes.use( (req, res, next) => {
 
 apiRoutes.get('/usuarios', (req, res) => {
     Usuario.find()
-    .select("nome sobrenome telefone email favoritos")
+    .select("nome sobrenome telefone email favoritos admin funcionario")
     .exec()
     .then(docs => {
         const response = {
@@ -213,7 +213,9 @@ apiRoutes.get('/usuarios', (req, res) => {
                     sobrenome: doc.sobrenome,
                     telefone: doc.telefone,
                     email: doc.email,
-                    favoritos: doc.favoritos
+                    favoritos: doc.favoritos,
+                    admin: doc.admin,
+                    funcionario: doc.funcionario
                 }
             })
         }
@@ -225,7 +227,7 @@ apiRoutes.get('/usuarios', (req, res) => {
 
 apiRoutes.get('/usuarios/:_id', (req, res) => {
     Usuario.find({ _id: req.params._id })
-    .select("nome sobrenome telefone email favoritos")
+    .select("nome sobrenome telefone email favoritos admin funcionario")
     .exec()
     .then(docs => {
         const response = {
@@ -236,7 +238,9 @@ apiRoutes.get('/usuarios/:_id', (req, res) => {
                     sobrenome: doc.sobrenome,
                     telefone: doc.telefone,
                     email: doc.email,
-                    favoritos: doc.favoritos
+                    favoritos: doc.favoritos,
+                    admin: doc.admin,
+                    funcionario: doc.funcionario
                 }
             })
         }
