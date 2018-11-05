@@ -63,20 +63,14 @@ console.log('A api esta hospedada na porta: ' + port)
 var corsOptions = {
     origin: '*',
     allowedHeaders: ['Content-Type', 'Authorization', 'Content-Length', 'X-Requested-With', 'Accept', 'x-access-token'],
-    methods: ['GET', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+    methods: ['GET', 'PUT', 'POST', 'DELETE', 'OPTIONS'],
     optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 }
 app.use(cors(corsOptions));
 
 app.use('/api', apiRoutes)
 
-// apiRoutes.get('/emails', (req, res) => {
-//     Usuario.find().distinct('email', (err, usuarios) => {
-//         res.json(usuarios)
-//     })
-// })
-
-apiRoutes.post('/registro', (req, res) => {
+apiRoutes.post('/registro/usuario', (req, res) => {
 
     let novoUsuario = new Usuario({
         nome: req.body.nome,
@@ -201,7 +195,7 @@ apiRoutes.use( (req, res, next) => {
 
 apiRoutes.get('/usuarios', (req, res) => {
     Usuario.find()
-    .select("nome sobrenome telefone email favoritos")
+    .select("nome sobrenome telefone email favoritos admin funcionario")
     .exec()
     .then(docs => {
         const response = {
@@ -213,7 +207,9 @@ apiRoutes.get('/usuarios', (req, res) => {
                     sobrenome: doc.sobrenome,
                     telefone: doc.telefone,
                     email: doc.email,
-                    favoritos: doc.favoritos
+                    favoritos: doc.favoritos,
+                    admin: doc.admin,
+                    funcionario: doc.funcionario
                 }
             })
         }
@@ -225,7 +221,7 @@ apiRoutes.get('/usuarios', (req, res) => {
 
 apiRoutes.get('/usuarios/:_id', (req, res) => {
     Usuario.find({ _id: req.params._id })
-    .select("nome sobrenome telefone email favoritos")
+    .select("nome sobrenome telefone email favoritos admin funcionario")
     .exec()
     .then(docs => {
         const response = {
@@ -236,7 +232,9 @@ apiRoutes.get('/usuarios/:_id', (req, res) => {
                     sobrenome: doc.sobrenome,
                     telefone: doc.telefone,
                     email: doc.email,
-                    favoritos: doc.favoritos
+                    favoritos: doc.favoritos,
+                    admin: doc.admin,
+                    funcionario: doc.funcionario
                 }
             })
         }
@@ -246,40 +244,13 @@ apiRoutes.get('/usuarios/:_id', (req, res) => {
     })
 })
 
-// apiRoutes.get('/usuarios/:_id', (req, res) => {
-//     Usuario.find({_id: req.params._id}, (err, usuarios) => {
-//         res.json(usuarios)
-//     })
-// })
-
-// apiRoutes.get('/usuarios/:email', (req, res) => {
-//     Usuario.find({email: req.params.email}, (err, usuarios) => {
-//         res.json(usuarios)
-//     })
-// })
-
 // apiRoutes.get('/usuarios/:email', (req, res) => {
 //     Usuario.find().distinct('email', (err, usuarios) => {
 //     res.json(usuarios)
 //     })
 // })
 
-
 apiRoutes.put('/usuarios/:_id', (req, res) => {
-
-    // const updateOps = {};
-    // for (const ops of req.body) {
-    //   updateOps[ops.propName] = ops.value;
-    // }
-
-    // Usuario.update({ _id: req.params._id }, { $set: updateOps })
-    //     .exec()
-    //     .then(result => {
-    //         res.status(200).json({ message: 'Usuario alterado!! '})
-    //     }).catch (err => {
-    //         console.log(err)
-    //         res.status(500).json({ message: 'Erro ao alterar!!!' })
-    //     })
     Usuario.findOneAndUpdate({ _id: req.params._id }, req.body, { upsert: true}, (err, usuarios) => {
         if(err) {
             res.status(500).json({ message: 'Falha ao alterar os dados do usuario' })
@@ -299,18 +270,11 @@ apiRoutes.delete('/usuarios/:_id', (req, res) => {
             console.log(err)
             res.status(500).json({ message: 'Falha ao deletar' })
         })
-    // Usuario.find({ _id: req.params._id }).remove( (err) => {
-    //     if(err) {
-    //         res.status(500).json({ message: 'Falha ao deletar usuario' })
-    //         return
-    //     }
-    //     res.json({ success: true })
-    // })
 })
 
 // ============================================
 
-apiRoutes.post('/registroimovel', upload.single('imvImg'), (req, res) => {
+apiRoutes.post('/registro/imovel', upload.single('imvImg'), (req, res) => {
     let novoImovel = new Imovel({
         tipo: req.body.tipo,
         valor: req.body.valor,
@@ -352,50 +316,24 @@ apiRoutes.post('/registroimovel', upload.single('imvImg'), (req, res) => {
                         }
                     })
                 }).catch(err => {
-                    res.status(500).json({ message: 'Existe alguma informacao imcompleta' })
+                    res.status(500).json({ message: 'Existe alguma informacao incompleta' })
                 })
         } else {
             res.status(500).json({ message: 'Imovel Existente' })
         }
-        //     newImovel.save( (err) => {
-        //         if(err){
-        //             console.log(error)
-        //         }else{
-        //         console.log('sucesso!!')
-        //             res.json({
-        //                 success: true
-        //             })
-        //      } 
-        //     })
-        // } else {
-        //     res.status(500).json({ message: 'Imovel ja existe '})
-        // }
     })
     
 })
 
-apiRoutes.patch('/imoveis', (req, res) => {
-
-    const updateOps = {};
-    for (const ops of req.body) {
-      updateOps[ops.propName] = ops.value;
-    }
-
-    Imovel.update({ _id: req.params._id }, { $set: updateOps })
-    exec()
-    .then(result => {
-        res.status(200).json({ message: 'Imovel alterado!! '})
-    }).catch (err => {
-        console.log(err)
-        res.status(500).json({ message: 'Erro ao alterar!!!' })
+apiRoutes.put('/imoveis', (req, res) => {
+    Imovel.findOneAndUpdate({ _id: req.params._id }, req.body, { upsert: true }, (err, imoveis) => {
+        if(err) {
+            res.status(500).json({ message: 'Falha ao tentar alterar os dados do imovel' })
+            return
+        } else {
+            res.status(200).json({ message: 'Sucesso ao alterar!!' })
+        }
     })
-    // Imovel.findOneAndUpdate({ _id: req.params._id }, req.body, { upsert: true }, (err, imoveis) => {
-    //     if(err) {
-    //         res.status(500).json({ message: 'Falha ao tentar alterar os dados do imovel' })
-    //         return
-    //     }
-    //     res.json(imoveis)
-    // })
 })
 
 apiRoutes.delete('/imoveis/:_id', (req, res) => {
@@ -407,13 +345,6 @@ apiRoutes.delete('/imoveis/:_id', (req, res) => {
             console.log(err)
             res.status(500).json({ message: 'Falha ao deletar' })
         })
-    // Imovel.find({ _id: req.params._id }).remove( (err) => {
-    //     if(err) {
-    //         res.status(500).json({ message: 'Falha ao tentar deletar o imovel' })
-    //         return
-    //     }
-    //     res.json({ success: true })
-    // })
 })
 
 // ============================================
