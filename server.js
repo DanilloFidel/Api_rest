@@ -63,7 +63,7 @@ console.log('A api esta hospedada na porta: ' + port)
 var corsOptions = {
     origin: '*',
     allowedHeaders: ['Content-Type', 'Authorization', 'Content-Length', 'X-Requested-With', 'Accept', 'x-access-token'],
-    methods: ['GET', 'PUT', 'POST', 'DELETE', 'OPTIONS'],
+    methods: ['GET', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
     optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 }
 app.use(cors(corsOptions));
@@ -76,7 +76,7 @@ app.use('/api', apiRoutes)
 //     })
 // })
 
-apiRoutes.post('/registro', upload.single('usuarioImg'), (req, res) => {
+apiRoutes.post('/registro', /*upload.single('usuarioImg'),*/ (req, res) => {
 
     let novoUsuario = new Usuario({
         nome: req.body.nome,
@@ -86,7 +86,7 @@ apiRoutes.post('/registro', upload.single('usuarioImg'), (req, res) => {
         email: req.body.email,
         admin: req.body.admin,
         funcionario: req.body.funcionario,
-        usuarioImg: req.file.path
+        // usuarioImg: req.file.path
     })
 
     Usuario.findOne({ email: req.body.email }, (err, usuario) => {
@@ -126,11 +126,11 @@ apiRoutes.post('/autenticacao', (req, res) => {
             res.status(500).json({ error: err.message })
 
         if(!usuario) {
-            res.json({ success: false, message: 'Autenticaçao do Email falhou. N existe Usuario'})
+            res.json({ success: false, message: 'Autenticaçao falhou'})
         } else if (usuario) {
 
             if(usuario.senha != req.body.senha) {
-                res.json({ success: false, message: 'Autenticaçao do Email Falhou. Senha ERRROUUUU!!'})
+                res.json({ success: false, message: 'Autenticaçao Falhou'})
             } else {
                 let token = jwt.sign(usuario, app.get('superNode-auth'), {
                     expiresIn: 700
@@ -220,29 +220,51 @@ apiRoutes.get('/usuarios/:email', (req, res) => {
 // })
 
 
-apiRoutes.put('/usuarios', (req, res) => {
-    Usuario.findOneAndUpdate({ _id: req.params._id }, req.body, { upsert: true}, (err, usuarios) => {
-        if(err) {
-            res.status(500).json({ message: 'Falha ao alterar os dados do usuario' })
-            return
-        }
-        res.json(usuarios)
-    })
+apiRoutes.patch('/usuarios', (req, res) => {
+
+    const updateOps = {};
+    for (const ops of req.body) {
+      updateOps[ops.propName] = ops.value;
+    }
+
+    Usuario.update({ _id: req.params._id }, { $set: updateOps })
+        .exec()
+        .then(result => {
+            res.status(200).json({ message: 'Usuario alterado!! '})
+        }).catch (err => {
+            console.log(err)
+            res.status(500).json({ message: 'Erro ao alterar!!!' })
+        })
+    // Usuario.findOneAndUpdate({ _id: req.params._id }, req.body, { upsert: true}, (err, usuarios) => {
+    //     if(err) {
+    //         res.status(500).json({ message: 'Falha ao alterar os dados do usuario' })
+    //         return
+    //     }
+    //     res.json(usuarios)
+    // })
 })
 
 apiRoutes.delete('/usuarios/:_id', (req, res) => {
-    Usuario.find({ _id: req.params._id }).remove( (err) => {
-        if(err) {
-            res.status(500).json({ message: 'Falha ao deletar usuario' })
-            return
-        }
-        res.json({ success: true })
-    })
+    Usuario.remove({ _id: req.params._id })
+        .exec()
+        .then(result => {
+            res.status(200).json({ message: 'Usuario deletado' })
+        }).catch (err => {
+            console.log(err)
+            res.status(500).json({ message: 'Falha ao deletar' })
+        })
+    // Usuario.find({ _id: req.params._id }).remove( (err) => {
+    //     if(err) {
+    //         res.status(500).json({ message: 'Falha ao deletar usuario' })
+    //         return
+    //     }
+    //     res.json({ success: true })
+    // })
 })
 
 // ============================================
 
-apiRoutes.post('/registroimovel', (req, res) => {
+apiRoutes.post('/registroimovel', upload.single('imvImg'), (req, res) => {
     let newImovel = new Imovel({
         tipo: req.body.tipo,
         valor: req.body.valor,
@@ -255,7 +277,8 @@ apiRoutes.post('/registroimovel', (req, res) => {
         rua: req.body.rua,
         cep: req.body.cep,
         bairro: req.body.bairro,
-        nro: req.body.nro
+        nro: req.body.nro,
+        imvImg: req.file.path
     })
 
     Usuario.findOne({ tipo: req.body.email, area: req.body.area, cep: req.body.cep, nro: req.body.nro  }, (err, imoveis) => {
@@ -278,10 +301,36 @@ apiRoutes.post('/registroimovel', (req, res) => {
 })
 
 apiRoutes.get('/imoveis', (req, res) => {
-    Imovel.find({}, (err, imoveis) => {
-        res.json(imoveis)
+    Imovel.find()
+        .select("tipo valor disp area quartos vagas suite desc rua cep bairro nro imvImg")
+        .exec()
+        .then(docs => {
+            const response = {
+                count: docs.length,
+                imoveis: docs.map(doc => {
+                    return {
+                        _id: doc._id,
+                        tipo: doc.tipo,
+                        valor: doc.valor,
+                        disp: doc.disp,
+                        area: doc.area,
+                        quartos: doc.quartos,
+                        vagas: doc.vagas,
+                        suite: doc.suite,
+                        desc: doc.desc,
+                        rua: doc.rua,
+                        cep: doc.cep,
+                        bairro: doc.bairro,
+                        nro: doc.nro,
+                        imvImg: doc.imvImg
+                    }
+                })  
+            }
+            res.status(200).json(response)
+        }).catch(err => {
+            res.status(404).json({ message: 'imoveis nao encontrados' })
+        })
     })
-})
 
 apiRoutes.get('/imoveis/:_id', (req, res) => {
     Imovel.find({ _id: req.params._id }, (err, imoveis ) => {
@@ -289,24 +338,46 @@ apiRoutes.get('/imoveis/:_id', (req, res) => {
     })
 })
 
-apiRoutes.put('/imoveis', (req, res) => {
-    Imovel.findOneAndUpdate({ _id: req.params._id }, req.body, { upsert: true }, (err, imoveis) => {
-        if(err) {
-            res.status(500).json({ message: 'Falha ao tentar alterar os dados do imovel' })
-            return
-        }
-        res.json(imoveis)
+apiRoutes.patch('/imoveis', (req, res) => {
+
+    const updateOps = {};
+    for (const ops of req.body) {
+      updateOps[ops.propName] = ops.value;
+    }
+
+    Imovel.update({ _id: req.params._id }, { $set: updateOps })
+    exec()
+    .then(result => {
+        res.status(200).json({ message: 'Imovel alterado!! '})
+    }).catch (err => {
+        console.log(err)
+        res.status(500).json({ message: 'Erro ao alterar!!!' })
     })
+    // Imovel.findOneAndUpdate({ _id: req.params._id }, req.body, { upsert: true }, (err, imoveis) => {
+    //     if(err) {
+    //         res.status(500).json({ message: 'Falha ao tentar alterar os dados do imovel' })
+    //         return
+    //     }
+    //     res.json(imoveis)
+    // })
 })
 
 apiRoutes.delete('/imoveis', (req, res) => {
-    Imovel.find({ _id: req.params._id }).remove( (err) => {
-        if(err) {
-            res.status(500).json({ message: 'Falha ao tentar deletar o imovel' })
-            return
-        }
-        res.json({ success: true })
-    })
+    Imovel.remove({ _id: req.params._id })
+        .exec()
+        .then(result => {
+            res.status(200).json({ message: 'Imovel deletado' })
+        }).catch (err => {
+            console.log(err)
+            res.status(500).json({ message: 'Falha ao deletar' })
+        })
+    // Imovel.find({ _id: req.params._id }).remove( (err) => {
+    //     if(err) {
+    //         res.status(500).json({ message: 'Falha ao tentar deletar o imovel' })
+    //         return
+    //     }
+    //     res.json({ success: true })
+    // })
 })
 
 // ============================================

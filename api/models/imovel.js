@@ -15,6 +15,7 @@ module.exports = mongoose.model('Imovel', new Schema({
     cep: { type: String, required: true },
     bairro: { type: String, require: true },
     nro: { type: String, required: true },
-    imagem: { data: Buffer, contentType: String, required: false }
+    imvImg: { type: String, required: false }
+
 
 }))
