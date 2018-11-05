@@ -76,7 +76,7 @@ app.use('/api', apiRoutes)
 //     })
 // })
 
-apiRoutes.post('/registro', /*upload.single('usuarioImg'),*/ (req, res) => {
+apiRoutes.post('/registro', (req, res) => {
 
     let novoUsuario = new Usuario({
         nome: req.body.nome,
@@ -85,8 +85,7 @@ apiRoutes.post('/registro', /*upload.single('usuarioImg'),*/ (req, res) => {
         telefone: req.body.telefone,
         email: req.body.email,
         admin: req.body.admin,
-        funcionario: req.body.funcionario,
-        // usuarioImg: req.file.path
+        funcionario: req.body.funcionario
     })
 
 
@@ -97,19 +96,7 @@ apiRoutes.post('/registro', /*upload.single('usuarioImg'),*/ (req, res) => {
                 .save()
                 .then(result => {
                     res.status(201).json({
-                        message: 'Usuario cadastrado com SUCESSO!!!',
-                        UsuarioCriado: {
-                            _id: result._id,
-                            nome: result.nome,
-                            sobrenome: result.sobrenome,
-                            telefone: result.telefone,
-                            email: result.email,
-                            senha: result.senha,
-                            usuarioImg: result.usuarioImg,
-                            admin: result.admin,
-                            funcionario: result.funcionario,
-                            usuarioImg: req.file.path
-                        }
+                        message: 'Usuario cadastrado com SUCESSO!!!'
                     })
                 }).catch(err => {
                     res.status(500).json({ message: 'Existe alguma informacao pendente a ser preenchida' })
@@ -178,7 +165,10 @@ apiRoutes.post('/autenticacao', (req, res) => {
                 res.json({
                     success: true,
                     message: 'Token Criado!!',
-                    token: token
+                    token: token,
+                    usuarioID: usuario._id, 
+                    usuarioNome: usuario.nome, 
+                    usuarioEmail: usuario.email
                 })
             }
         }
@@ -209,12 +199,6 @@ apiRoutes.use( (req, res, next) => {
 
 // ============================================
 
-// apiRoutes.get('/usuarios', (req, res) => {
-//     Usuario.find({}, (err, usuarios) => {
-//         res.json(usuarios)
-//     })
-// })
-
 apiRoutes.get('/usuarios', (req, res) => {
     Usuario.find()
     .select("nome sobrenome telefone email favoritos")
@@ -229,8 +213,30 @@ apiRoutes.get('/usuarios', (req, res) => {
                     sobrenome: doc.sobrenome,
                     telefone: doc.telefone,
                     email: doc.email,
-                    favoritos: doc.favoritos,
-                    usuarioImg: doc.usuarioImg
+                    favoritos: doc.favoritos
+                }
+            })
+        }
+        res.status(200).json(response)
+    }).catch(err => {
+        res.status(404).json({ message: 'usuarios nao encontrados' })
+    })
+})
+
+apiRoutes.get('/usuarios/:_id', (req, res) => {
+    Usuario.find({ _id: req.params._id })
+    .select("nome sobrenome telefone email favoritos")
+    .exec()
+    .then(docs => {
+        const response = {
+            usuarios: docs.map(doc => {
+                return {
+                    _id: doc._id,
+                    nome: doc.nome,
+                    sobrenome: doc.sobrenome,
+                    telefone: doc.telefone,
+                    email: doc.email,
+                    favoritos: doc.favoritos
                 }
             })
         }
@@ -246,11 +252,11 @@ apiRoutes.get('/usuarios', (req, res) => {
 //     })
 // })
 
-apiRoutes.get('/usuarios/:email', (req, res) => {
-    Usuario.find({email: req.params.email}, (err, usuarios) => {
-        res.json(usuarios)
-    })
-})
+// apiRoutes.get('/usuarios/:email', (req, res) => {
+//     Usuario.find({email: req.params.email}, (err, usuarios) => {
+//         res.json(usuarios)
+//     })
+// })
 
 // apiRoutes.get('/usuarios/:email', (req, res) => {
 //     Usuario.find().distinct('email', (err, usuarios) => {
@@ -259,28 +265,29 @@ apiRoutes.get('/usuarios/:email', (req, res) => {
 // })
 
 
-apiRoutes.patch('/usuarios', (req, res) => {
+apiRoutes.put('/usuarios/:_id', (req, res) => {
 
-    const updateOps = {};
-    for (const ops of req.body) {
-      updateOps[ops.propName] = ops.value;
-    }
+    // const updateOps = {};
+    // for (const ops of req.body) {
+    //   updateOps[ops.propName] = ops.value;
+    // }
 
-    Usuario.update({ _id: req.params._id }, { $set: updateOps })
-        .exec()
-        .then(result => {
-            res.status(200).json({ message: 'Usuario alterado!! '})
-        }).catch (err => {
-            console.log(err)
-            res.status(500).json({ message: 'Erro ao alterar!!!' })
-        })
-    // Usuario.findOneAndUpdate({ _id: req.params._id }, req.body, { upsert: true}, (err, usuarios) => {
-    //     if(err) {
-    //         res.status(500).json({ message: 'Falha ao alterar os dados do usuario' })
-    //         return
-    //     }
-    //     res.json(usuarios)
-    // })
+    // Usuario.update({ _id: req.params._id }, { $set: updateOps })
+    //     .exec()
+    //     .then(result => {
+    //         res.status(200).json({ message: 'Usuario alterado!! '})
+    //     }).catch (err => {
+    //         console.log(err)
+    //         res.status(500).json({ message: 'Erro ao alterar!!!' })
+    //     })
+    Usuario.findOneAndUpdate({ _id: req.params._id }, req.body, { upsert: true}, (err, usuarios) => {
+        if(err) {
+            res.status(500).json({ message: 'Falha ao alterar os dados do usuario' })
+            return
+        } else {
+            res.status(200).json({ message: 'Sucesso ao alterar!!' })
+        }
+    })
 })
 
 apiRoutes.delete('/usuarios/:_id', (req, res) => {
@@ -304,7 +311,7 @@ apiRoutes.delete('/usuarios/:_id', (req, res) => {
 // ============================================
 
 apiRoutes.post('/registroimovel', upload.single('imvImg'), (req, res) => {
-    let newImovel = new Imovel({
+    let novoImovel = new Imovel({
         tipo: req.body.tipo,
         valor: req.body.valor,
         disp: req.body.disp,
@@ -320,21 +327,49 @@ apiRoutes.post('/registroimovel', upload.single('imvImg'), (req, res) => {
         imvImg: req.file.path
     })
 
-    Usuario.findOne({ tipo: req.body.email, area: req.body.area, cep: req.body.cep, nro: req.body.nro  }, (err, imoveis) => {
-        if( imoveis == null ){
-            newImovel.save( (err) => {
-                if(err){
-                    console.log(error)
-                }else{
-                console.log('sucesso!!')
-                    res.json({
-                        success: true
+    Imovel.findOne({ tipo: req.body.tipo , area: req.body.area, cep: req.body.cep, nro: req.body.nro  }, (err, imovel) => {
+        if( imovel == null ){
+            novoImovel
+                .save()
+                .then(result => {
+                    res.status(200).json({
+                        message: 'Imovel cadastrado com SUCESSO!!',
+                        ImovelCriado: {
+                            _id: result._id,
+                            tipo: result.tipo,
+                            valor: result.valor,
+                            disp: result.disp,
+                            area: result.area,
+                            quartos: result.quartos,
+                            vagas: result.vagas,
+                            suite: result.suite,
+                            desc: result.desc,
+                            rua: result.rua,
+                            cep: result.cep,
+                            bairro: result.bairro,
+                            nro: result.nro,
+                            imvImg: result.imvImg
+                        }
                     })
-             } 
-            })
+                }).catch(err => {
+                    res.status(500).json({ message: 'Existe alguma informacao imcompleta' })
+                })
         } else {
-            res.status(500).json({ message: 'Imovel ja existe '})
+            res.status(500).json({ message: 'Imovel Existente' })
         }
+        //     newImovel.save( (err) => {
+        //         if(err){
+        //             console.log(error)
+        //         }else{
+        //         console.log('sucesso!!')
+        //             res.json({
+        //                 success: true
+        //             })
+        //      } 
+        //     })
+        // } else {
+        //     res.status(500).json({ message: 'Imovel ja existe '})
+        // }
     })
     
 })
@@ -363,7 +398,7 @@ apiRoutes.patch('/imoveis', (req, res) => {
     // })
 })
 
-apiRoutes.delete('/imoveis', (req, res) => {
+apiRoutes.delete('/imoveis/:_id', (req, res) => {
     Imovel.remove({ _id: req.params._id })
         .exec()
         .then(result => {
