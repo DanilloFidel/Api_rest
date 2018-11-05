@@ -89,43 +89,6 @@ apiRoutes.post('/registro', /*upload.single('usuarioImg'),*/ (req, res) => {
         // usuarioImg: req.file.path
     })
 
-    apiRoutes.get('/imoveis', (req, res) => {
-        Imovel.find()
-            .select("tipo valor disp area quartos vagas suite desc rua cep bairro nro imvImg")
-            .exec()
-            .then(docs => {
-                const response = {
-                    count: docs.length,
-                    imoveis: docs.map(doc => {
-                        return {
-                            _id: doc._id,
-                            tipo: doc.tipo,
-                            valor: doc.valor,
-                            disp: doc.disp,
-                            area: doc.area,
-                            quartos: doc.quartos,
-                            vagas: doc.vagas,
-                            suite: doc.suite,
-                            desc: doc.desc,
-                            rua: doc.rua,
-                            cep: doc.cep,
-                            bairro: doc.bairro,
-                            nro: doc.nro,
-                            imvImg: doc.imvImg
-                        }
-                    })  
-                }
-                res.status(200).json(response)
-            }).catch(err => {
-                res.status(404).json({ message: 'imoveis nao encontrados' })
-            })
-        })
-    
-    apiRoutes.get('/imoveis/:_id', (req, res) => {
-        Imovel.find({ _id: req.params._id }, (err, imoveis ) => {
-            res.json(imoveis)
-        })
-    })
 
     Usuario.findOne({ email: req.body.email }, (err, usuario) => {
        
@@ -156,6 +119,44 @@ apiRoutes.post('/registro', /*upload.single('usuarioImg'),*/ (req, res) => {
         }
     })
         
+})
+
+apiRoutes.get('/imoveis', (req, res) => {
+    Imovel.find()
+        .select("tipo valor disp area quartos vagas suite desc rua cep bairro nro imvImg")
+        .exec()
+        .then(docs => {
+            const response = {
+                count: docs.length,
+                imoveis: docs.map(doc => {
+                    return {
+                        _id: doc._id,
+                        tipo: doc.tipo,
+                        valor: doc.valor,
+                        disp: doc.disp,
+                        area: doc.area,
+                        quartos: doc.quartos,
+                        vagas: doc.vagas,
+                        suite: doc.suite,
+                        desc: doc.desc,
+                        rua: doc.rua,
+                        cep: doc.cep,
+                        bairro: doc.bairro,
+                        nro: doc.nro,
+                        imvImg: doc.imvImg
+                    }
+                })  
+            }
+            res.status(200).json(response)
+        }).catch(err => {
+            res.status(404).json({ message: 'imoveis nao encontrados' })
+        })
+    })
+
+apiRoutes.get('/imoveis/:_id', (req, res) => {
+    Imovel.find({ _id: req.params._id }, (err, imoveis ) => {
+        res.json(imoveis)
+    })
 })
 
 apiRoutes.post('/autenticacao', (req, res) => {
