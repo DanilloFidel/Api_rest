@@ -96,7 +96,7 @@ apiRoutes.post('/registro/usuario', (req, res) => {
                     res.status(500).json({ message: 'Existe alguma informacao pendente a ser preenchida' })
                 })
         } else {
-            res.status(500).json({ message: 'Email ja existe' })
+            res.status(501).json({ message: 'Email ja existe' })
         }
     })
         
@@ -282,17 +282,19 @@ apiRoutes.post('/registro/imovel', upload.single('imvImg'), (req, res) => {
         area: req.body.area,
         quartos: req.body.quartos,
         vagas: req.body.vagas,
-        suite: req.body.suite,
-        desc: req.body.desc,
-        rua: req.body.rua,
+        suites: req.body.suites,
+        descricao: req.body.descricao,
         cep: req.body.cep,
         bairro: req.body.bairro,
         nro: req.body.nro,
+        cidade: req.body.cidade,
+        estado: req.body.estado,
         imvImg: req.file.path
     })
 
     Imovel.findOne({ tipo: req.body.tipo , area: req.body.area, cep: req.body.cep, nro: req.body.nro  }, (err, imovel) => {
         if( imovel == null ){
+            // if(!req.file)
             novoImovel
                 .save()
                 .then(result => {
@@ -306,20 +308,22 @@ apiRoutes.post('/registro/imovel', upload.single('imvImg'), (req, res) => {
                             area: result.area,
                             quartos: result.quartos,
                             vagas: result.vagas,
-                            suite: result.suite,
-                            desc: result.desc,
-                            rua: result.rua,
+                            suites: result.suites,
+                            descricao: result.descricao,
                             cep: result.cep,
                             bairro: result.bairro,
                             nro: result.nro,
+                            cidade: result.cidade,
+                            estado: result.estado,
                             imvImg: result.imvImg
                         }
                     })
                 }).catch(err => {
+                    console.log(err)
                     res.status(500).json({ message: 'Existe alguma informacao incompleta' })
                 })
         } else {
-            res.status(500).json({ message: 'Imovel Existente' })
+            res.status(501).json({ message: 'Imovel Existente' })
         }
     })
     

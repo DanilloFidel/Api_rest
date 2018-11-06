@@ -4,19 +4,18 @@ let Schema = mongoose.Schema
 module.exports = mongoose.model('Imovel', new Schema({
   
     tipo: { type: String, require: true },
-    valor: { type: Number, require: true },
+    valor: { type: String, require: true },
     disp: { type: String, require: true },
-    area: { type: Number, require: true },
-    quartos: { type: Number, require: true },
-    vagas: { type: Number, require: true },
-    suite: { type: Number, require: true },
-    desc: { type: String, require: true },
-    rua: { type: String, required: true },
+    area: { type: String, require: true },
+    quartos: { type: String, require: true },
+    vagas: { type: String, require: true },
+    suites: { type: String, require: false },
+    descricao: { type: String, require: true },
     cep: { type: String, required: true },
     bairro: { type: String, require: true },
     nro: { type: String, required: true },
-    imvImg: [
-        { type: String, required: false }
-    ]
+    cidade: { type: String, required: true },
+    estado: { type: String, required: true },
+    imvImg: { type: String, required: false }
 
 }))
