@@ -289,7 +289,7 @@ apiRoutes.post('/registro/imovel', upload.single('imvImg'), (req, res) => {
         nro: req.body.nro,
         cidade: req.body.cidade,
         estado: req.body.estado,
-        imvImg: req.file.path
+        // imvImg: req.file.path
     })
 
     Imovel.findOne({ tipo: req.body.tipo , area: req.body.area, cep: req.body.cep, nro: req.body.nro  }, (err, imovel) => {
@@ -298,26 +298,7 @@ apiRoutes.post('/registro/imovel', upload.single('imvImg'), (req, res) => {
             novoImovel
                 .save()
                 .then(result => {
-                    res.status(200).json({
-                        message: 'Imovel cadastrado com SUCESSO!!',
-                        ImovelCriado: {
-                            _id: result._id,
-                            tipo: result.tipo,
-                            valor: result.valor,
-                            disp: result.disp,
-                            area: result.area,
-                            quartos: result.quartos,
-                            vagas: result.vagas,
-                            suites: result.suites,
-                            descricao: result.descricao,
-                            cep: result.cep,
-                            bairro: result.bairro,
-                            nro: result.nro,
-                            cidade: result.cidade,
-                            estado: result.estado,
-                            imvImg: result.imvImg
-                        }
-                    })
+                    res.status(200).json({ message: 'Imovel cadastrado com SUCESSO!!' })
                 }).catch(err => {
                     console.log(err)
                     res.status(500).json({ message: 'Existe alguma informacao incompleta' })
