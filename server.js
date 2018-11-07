@@ -289,7 +289,7 @@ apiRoutes.post('/registro/imovel', upload.single('imvImg'), (req, res) => {
         nro: req.body.nro,
         cidade: req.body.cidade,
         estado: req.body.estado,
-        // imvImg: req.file.path
+        imvImg: req.file.path
     })
 
     Imovel.findOne({ tipo: req.body.tipo , area: req.body.area, cep: req.body.cep, nro: req.body.nro  }, (err, imovel) => {
