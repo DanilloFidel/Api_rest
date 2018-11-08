@@ -118,11 +118,12 @@ apiRoutes.get('/imoveis', (req, res) => {
                         area: doc.area,
                         quartos: doc.quartos,
                         vagas: doc.vagas,
-                        suite: doc.suite,
-                        desc: doc.desc,
-                        rua: doc.rua,
+                        suites: doc.suites,
+                        descricao: doc.descricao,
                         cep: doc.cep,
                         bairro: doc.bairro,
+                        cidade: doc.cidade,
+                        estado: doc.estado,
                         nro: doc.nro,
                         imvImg: doc.imvImg
                     }
@@ -132,11 +133,15 @@ apiRoutes.get('/imoveis', (req, res) => {
         }).catch(err => {
             res.status(404).json({ message: 'imoveis nao encontrados' })
         })
-    })
+    })      
 
 apiRoutes.get('/imoveis/:_id', (req, res) => {
     Imovel.find({ _id: req.params._id }, (err, imoveis ) => {
-        res.json(imoveis)
+        if( err ){
+            res.status(404).json({ message: "imovel nao encontrado"})
+        } else {
+            res.status(200).json(imoveis)
+        }
     })
 })
 
@@ -294,7 +299,6 @@ apiRoutes.post('/registro/imovel', upload.single('imvImg'), (req, res) => {
 
     Imovel.findOne({ tipo: req.body.tipo , area: req.body.area, cep: req.body.cep, nro: req.body.nro  }, (err, imovel) => {
         if( imovel == null ){
-            // if(!req.file)
             novoImovel
                 .save()
                 .then(result => {
