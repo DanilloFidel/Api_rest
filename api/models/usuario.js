@@ -10,7 +10,7 @@ module.exports = mongoose.model('Usuario', new Schema({
     email: { type: String, required: true },
     admin: { type: Boolean, required: false },
     funcionario: { type: Boolean, required: false},
-    favoritos: [],
+    favoritos: { type: Array, required: false },
     // userImg: { type: String, required: false }
 
 }))
